@@ -68,7 +68,11 @@ def make_some_features(numbers, clip):
                 features.add(perm)
     return features
 
+<<<<<<< HEAD
+def create_features_labels():
+=======
 def create_features_label()
+>>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     features = make_some_features(list(range(1, 7)), 2)
 
     #Make a numpy array of each list.
@@ -126,13 +130,22 @@ def train_model(X_train, y_train):
                                  n_jobs=-1,
                                  oob_score=True,
                                  min_samples_split=3,
+<<<<<<< HEAD
+                                 n_estimators=2250)
+
+=======
                                  n_estimators=2000)
+>>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     extra.fit(X_train, y_train)
 
 
     params = {'min_samples_split': [4, 5, 6],
+<<<<<<< HEAD
+              'max_depth': [27, 30, 33]}
+=======
               'max_depth': [27, 30, 33],
               'n_estimators': [1250, 1500, 1750, 2000, 2250, 2500]}
+>>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     grid = GridSearchCV(extra,
                         param_grid=params,
                         scoring='average_precision',
@@ -150,12 +163,22 @@ def train_model(X_train, y_train):
 def pickle_it(model):
     """Serialize trained model."""
     model_b = pickle.dumps(model)
+<<<<<<< HEAD
+    pickle.dump(model_b, open('model.p', 'wb'))
+=======
     pickle.dump(model_b, open('model/model.pick', 'wr'))
+>>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
 
 
 def main():
     """Make featurs and labels, train and seralize model/datasets."""
+<<<<<<< HEAD
+    
+    print('Creating dataset...')
+    all_features, all_labels = create_features_labels()
+=======
     all_features, all_labels = create_featurs_labels()
+>>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     df = create_dataset(all_features, all_labels)
 
     X = df[['0', '1', '2', '3', '4', '5']]
@@ -166,6 +189,25 @@ def main():
     assert X_train.shape == y_train.shape
     assert X_val.shape == y_val.shape
     assert X_test.shape == y_test.shape
+<<<<<<< HEAD
+    
+    print('Dataset complete.')
+    
+    print('Training model...')
+    model = train_model(X_train, y_train)
+    print('Model complete.')
+    
+    print('Pickling model...')
+    pickle_it(model)
+    print('Pickling complete')
+    
+    print('Saving val and test sets...')
+    X_val.to_csv('X_val.csv')
+    y_val.to_csv('y_val.csv')
+    X_test.to_csv('X_test.csv')
+    y_test.to_csv('y_test.csv')
+    print('All done.')
+=======
 
     model = train_model(X_train, y_train)
     pickle_it(model)
@@ -174,6 +216,7 @@ def main():
     y_val.to_csv('data/y_val.csv')
     X_test.to_csv('data/X_test.csv')
     y_test.to_csv('data/y_test.csv')
+>>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     
 
 if __name__ == "__main__":
