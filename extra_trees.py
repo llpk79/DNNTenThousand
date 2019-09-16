@@ -10,7 +10,8 @@ from itertools import combinations_with_replacement as combos
 from itertools import permutations as perms
 from tensorflow.keras import layers, Model
 from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
-from sklearn.metrics import coverage_error, f1_score, label_ranking_average_precision_score, average_precision_score
+from sklearn.metrics import coverage_error, f1_score, 
+label_ranking_average_precision_score, average_precision_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 from tensorflow.data import Dataset
 
@@ -42,7 +43,8 @@ def score_all():
 def choose_dice(roll):
     """Returns label. Dice to be kept are labeled 1.0 else 0.0"""
     counts = Counter(roll)
-    if is_three_pair(roll) and (sum(scoring_rules[die - 1][count - 1] for die, count in counts.items()) < 1500):
+    if is_three_pair(roll) and (sum(scoring_rules[die - 1][count - 1] for 
+                                    die, count in counts.items()) < 1500):
         choice = score_all()
     elif is_straight(roll):
         choice = score_all()
@@ -68,19 +70,18 @@ def make_some_features(numbers, clip):
                 features.add(perm)
     return features
 
-<<<<<<< HEAD
 def create_features_labels():
-=======
-def create_features_label()
->>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     features = make_some_features(list(range(1, 7)), 2)
 
     #Make a numpy array of each list.
     all_features = np.array([np.array(feature) for feature in features])
+    
     #Make a label for each feature.
     all_labels = np.array([choose_dice(feature) for feature in all_features])
+    
     #Ensure arrays are of equal shape
     assert all_features.shape == all_labels.shape
+    
     return all_features, all_labels
 
 
@@ -95,67 +96,37 @@ def create_dataset(features, labels):
     return df
 
 
-def train_val_test_split(X, 
-                         y,
-                         train_size=.8,
-                         val_size=.1,
-                         test_size=.1,
-                         random_state=42,
-                         shuffle=True):
-    
-    assert train_size + val_size + test_size == 1
-        
-
-    X_trainval, X_test, y_trainval, y_test = train_test_split(X,
-                                                              y,
-                                                              test_size=test_size,
-                                                              random_state=random_state,
-                                                              shuffle=shuffle,
-                                                              stratify=y
-                                                             )
-    X_train, X_val, y_train, y_val = train_test_split(X_trainval,
-                                                      y_trainval,
-                                                      test_size=val_size / (train_size + val_size),
-                                                      random_state=random_state,
-                                                      shuffle=shuffle,
-                                                      stratify=y_trainval
-                                                     )
-    return X_train, X_val, X_test, y_train, y_val, y_test
-
-
 def train_model(X_train, y_train):
     """Train and ExtraTreesClassifier"""
     extra = ExtraTreesClassifier(bootstrap=True,
-                                 max_depth=25,
                                  n_jobs=-1,
                                  oob_score=True,
-                                 min_samples_split=3,
-<<<<<<< HEAD
-                                 n_estimators=2250)
-
-=======
                                  n_estimators=2000)
->>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
-    extra.fit(X_train, y_train)
 
 
     params = {'min_samples_split': [4, 5, 6],
-<<<<<<< HEAD
               'max_depth': [27, 30, 33]}
-=======
-              'max_depth': [27, 30, 33],
-              'n_estimators': [1250, 1500, 1750, 2000, 2250, 2500]}
->>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
+
     grid = GridSearchCV(extra,
                         param_grid=params,
                         scoring='average_precision',
                         n_jobs=-1,
                         cv=5,
-                        verbose=1)
+                        verbose=2)
     grid.fit(X_train, y_train)
 
+    params = {'n_estimators': [1250, 1500, 1750, 2000, 2250, 2500]}
+    
+    grid_1 = GridSearchCV(grid.best_estimator_,
+                          param_grid=params,
+                          scoring='average_precision',
+                          n_jobs=-1,
+                          cv=5,
+                          verbose=2)
+    grid_1.fit(X_train, y_train)
 
-    best = grid.best_estimator_
+
+    best = grid_1.best_estimator_
     
     return best
 
@@ -163,33 +134,25 @@ def train_model(X_train, y_train):
 def pickle_it(model):
     """Serialize trained model."""
     model_b = pickle.dumps(model)
-<<<<<<< HEAD
     pickle.dump(model_b, open('model.p', 'wb'))
-=======
-    pickle.dump(model_b, open('model/model.pick', 'wr'))
->>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
 
 
 def main():
     """Make featurs and labels, train and seralize model/datasets."""
-<<<<<<< HEAD
-    
     print('Creating dataset...')
     all_features, all_labels = create_features_labels()
-=======
-    all_features, all_labels = create_featurs_labels()
->>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     df = create_dataset(all_features, all_labels)
 
     X = df[['0', '1', '2', '3', '4', '5']]
     y = df[['0_l', '1_l', '2_l', '3_l', '4_l', '5_l']]
     
-    X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X,
+                                                        y, 
+                                                        stratify=y,
+                                                        shuffle=True)    
     
     assert X_train.shape == y_train.shape
-    assert X_val.shape == y_val.shape
     assert X_test.shape == y_test.shape
-<<<<<<< HEAD
     
     print('Dataset complete.')
     
@@ -201,22 +164,10 @@ def main():
     pickle_it(model)
     print('Pickling complete')
     
-    print('Saving val and test sets...')
-    X_val.to_csv('X_val.csv')
-    y_val.to_csv('y_val.csv')
+    print('Saving test sets...')
     X_test.to_csv('X_test.csv')
     y_test.to_csv('y_test.csv')
     print('All done.')
-=======
-
-    model = train_model(X_train, y_train)
-    pickle_it(model)
-    
-    X_val.to_csv('data/X_val.csv')
-    y_val.to_csv('data/y_val.csv')
-    X_test.to_csv('data/X_test.csv')
-    y_test.to_csv('data/y_test.csv')
->>>>>>> db60deaa86b3cfb47df661a8138ed67180f91cc2
     
 
 if __name__ == "__main__":
